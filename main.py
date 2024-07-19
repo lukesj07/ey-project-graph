@@ -1,6 +1,5 @@
 import openpyxl
 import pandas as pd
-from datetime import date
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import string
@@ -14,12 +13,8 @@ from openpyxl.styles import Font, Color
 DATA_PATH = "spreadsheet.xlsx"
 IMG_PATH = "img.jpg"
 
-IMG_WIDTH = 1280
+IMG_WIDTH = 700
 IMG_HEIGHT = 720
-
-def parse_date(d: str) -> date:
-    splt = map(int, d.split("-"))
-    return date(splt[0], splt[1], splt[2])
 
 def create_radar_ids() -> list[str]:
     ids = []
@@ -84,13 +79,7 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
             v.append(np.nan)
 
     df = pd.DataFrame.from_dict(data)
-    print(df.head)
-    """
-    df.style.apply(lambda x: "color: green", subset=df[gkey])
-    df.style.apply(lambda x: "color: orange", subset=df[akey])
-    df.style.apply(lambda x: "color: gray", subset=df[okey])
-    df.style.apply(lambda x: "color: red", subset=df[rkey])
-    """
+    # print(df.head)
 
     def color(val: str) -> str:
         if val in df[gkey]:
@@ -110,18 +99,18 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
     wb = openpyxl.load_workbook("test.xlsx")
     ws = wb.active
     for c in ["A", "C", "E", "G"]:
-        for i in range(1, max_len+1):
+        for i in range(1, max_len+2):
             match c:
                 case "A":
-                    ws[c + str(i)].font = Font(color=colors.RGB())
+                    ws[c + str(i)].font = Font(color=colors.Color("00ff00"))
                 case "C":
-                    ws[c + str(i)].font = Font(color=colors.ORANGE)
+                    ws[c + str(i)].font = Font(color=colors.Color("e66419"))
                 case "E":
-                    ws[c + str(i)].font = Font(color=colors.GRAY)
+                    ws[c + str(i)].font = Font(color=colors.Color("000000"))
                 case "G":
-                    ws[c + str(i)].font = Font(color=colors.RED)
+                    ws[c + str(i)].font = Font(color=colors.Color("ff0000"))
 
-    wb.save()
+    wb.save("test.xlsx")
     
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
@@ -132,11 +121,22 @@ def main() -> None:
     df = df.reset_index()
     df = df.drop("index", axis=1)
 
-    plt.imshow(mpimg.imread(IMG_PATH))
-    #plt.show()
-    generate_excel(create_radar_ids(), sort_project_status(df))
-    
+    fig, ax = plt.subplots(frameon=False)
 
+    ax.imshow(mpimg.imread(IMG_PATH), aspect="auto")
+
+    circle = plt.Circle((IMG_WIDTH//2, IMG_HEIGHT//2), 10, color="green", fill=True)
+    ax.add_artist(circle)
+    ax.text(IMG_WIDTH//2, IMG_HEIGHT//2, "te", ha="center", va="center", fontsize=7, color="white")
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_axis_off()
+
+    # Save the figure without borders
+    fig.savefig("radar.png", dpi=250, bbox_inches="tight")
+
+    plt.show()
+    
+    
 
 if __name__ == "__main__":
     main()
