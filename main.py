@@ -1,3 +1,4 @@
+from operator import ge
 import openpyxl
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -111,7 +112,10 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
                     ws[c + str(i)].font = Font(color=colors.Color("ff0000"))
 
     wb.save("test.xlsx")
-    
+
+def calculate_radius(percent: float) -> float:
+    return (310 * (1 - percent))
+
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
     df = df.dropna(how="all", axis=1)
@@ -120,14 +124,29 @@ def main() -> None:
     df = df[1:]
     df = df.reset_index()
     df = df.drop("index", axis=1)
+    names = sort_project_status(df)
+    ids = create_radar_ids()
+    # generate_excel(create_radar_ids(), names)
+    idx = 0
+    for i in range(len(names)):
+        for name in names[i]:
+            row_num = 0
+            for j in range(len(df["Project Name"])):
+                if df["Project Name"][j] == name:
+                    row_num = j
+                    break
+            r = calculate_radius(df["%Project Duration Completed2"][row_num])
+            match df["Service Category"][row_num]:
+                case "InfoSec" 
+            idx += 1
 
     fig, ax = plt.subplots(frameon=False)
 
     ax.imshow(mpimg.imread(IMG_PATH), aspect="auto")
 
-    circle = plt.Circle((IMG_WIDTH//2, IMG_HEIGHT//2), 10, color="green", fill=True)
+    circle = plt.Circle((660, IMG_HEIGHT//2), 10, color="green", fill=True)
     ax.add_artist(circle)
-    ax.text(IMG_WIDTH//2, IMG_HEIGHT//2, "te", ha="center", va="center", fontsize=7, color="white")
+    ax.text(660, IMG_HEIGHT//2, "te", ha="center", va="center", fontsize=7, color="white")
     ax.set_aspect("equal", adjustable="box")
     ax.set_axis_off()
 
