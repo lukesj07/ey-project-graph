@@ -137,7 +137,32 @@ def main() -> None:
                     break
             r = calculate_radius(df["%Project Duration Completed2"][row_num])
             match df["Service Category"][row_num]:
-                case "InfoSec" 
+                case "InfoSec Protection Services":
+                    # 0 - pi/4
+                    pass
+                case "IT Risk Management":
+                    # pi/4 - pi/2
+                    pass
+                case "Identity and Access":
+                    # pi/2 - 3pi/4
+                    pass
+                case "Threat Management":
+                    # 3pi/4 - pi
+                    pass
+                case "InfoSec Program Management":
+                    # pi - 5pi/4
+                    pass
+                case "InfoSec Program Support":
+                    # 5pi/4 - 3pi/2
+                    pass
+                case "Security Design Services":
+                    # 3pi/2 - 7pi/4
+                    pass
+                case "Compliance & Assurance":
+                    # 7pi/4 - 2pi
+                    pass
+                case _:
+                    print("This should not run")
             idx += 1
 
     fig, ax = plt.subplots(frameon=False)
