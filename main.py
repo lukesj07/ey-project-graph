@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import string
 import numpy as np
+import math
 
 from openpyxl.styles import colors
 from openpyxl.styles import Font, Color
@@ -113,8 +114,24 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
 
     wb.save("test.xlsx")
 
-def calculate_radius(percent: float) -> float:
-    return (310 * (1 - percent))
+def calculate_position(percent: float, max_r: int, positions: list[list[list], idx: int, angle_bounds: list[float]]) -> list[float]:
+    # radius_of_each_circle = 10
+    if 75 <= percent <= 100:
+        # TODO: check if current is empty or only has one element
+        # [angle, radius, id]
+        current = sorted(positions[idx])
+        for i in range(1, len(current)):
+            angle = current[i][0] - current[i - 1][0]
+            # R = dist of two positions with the above angles
+            if R * angle > 20:
+                # empty space
+                return [R, current[i][0] + angle / 2]
+
+
+    else:
+
+
+    # return (max_r * (1 - percent))
 
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
@@ -127,6 +144,7 @@ def main() -> None:
     names = sort_project_status(df)
     ids = create_radar_ids()
     # generate_excel(create_radar_ids(), names)
+    positions = [] # list[list[list[str, float, float]]]
     idx = 0
     for i in range(len(names)):
         for name in names[i]:
@@ -135,10 +153,14 @@ def main() -> None:
                 if df["Project Name"][j] == name:
                     row_num = j
                     break
+            # TODO: r is wrong
             r = calculate_radius(df["%Project Duration Completed2"][row_num])
+            percent = df["%Project Duration Completed"][row_num]
             match df["Service Category"][row_num]:
                 case "InfoSec Protection Services":
                     # 0 - pi/4
+                    if 75 <= percent <= 100:
+                        
                     pass
                 case "IT Risk Management":
                     # pi/4 - pi/2
