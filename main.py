@@ -9,6 +9,7 @@ import math
 
 from openpyxl.styles import colors
 from openpyxl.styles import Font, Color
+from pandas.core.common import iterable_not_string
 
 # https://stackoverflow.com/questions/50172905/center-a-label-inside-a-circle-with-matplotlib
 
@@ -115,23 +116,41 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
     wb.save("test.xlsx")
 
 def calculate_position(percent: float, max_r: int, positions: list[list[list], idx: int, angle_bounds: list[float]]) -> list[float]:
-    # radius_of_each_circle = 10 # - not to be confused with radius which = dist. from circle's center to the center of the graph circle
-    # NOTE: each position should be of the form [angle, radius, id]
+    # radius_of_each_circle = 10 # - not to be confused with the radius that equals dist. from circle's center to the center of the graph circle
+    # NOTE: each position should be in the format [angle, radius, id]
     if 75 <= percent <= 100:
         ideal_radius = round(R * (1 - percent))
-        # where R is the radius length from 75%-100%
-        current = [i for i in sorted(positions[idx]) if abs(ideal_radius - i[1]) <= 20]
-        if len(current) == 0:
-            return [ideal_radius, angle_bounds[0]]
-        elif len(current) == 1:
-            return [ideal_radius, angle_bounds[0] + (20 / ideal_radius)] # arc_length/radius
+        current_radius = ideal_radius
+        iterations = 0
+        too_small = False
+        while True:
+            # where R is the radius length from 75%-100%
+            current = [i for i in sorted(positions[idx]) if abs(current_radius - i[1]) <= 20]
+            if len(current) == 0:
+                return [current_radius, angle_bounds[0]] # Might have to add shifting factor
+            elif len(current) == 1:
+                return [current_radius, angle_bounds[0] + (20 / current_radius)] # arc_length/radius
             
-        # TODO: handle case where there is never an empty space
-        for i in range(1, len(current)):
-            angle = current[i][0] - current[i - 1][0]
-            if current[i][1] * angle > 20 and (current[i][0] + (angle / 2)) < angle_bounds[1]:
-                # TODO: does ideal_radius ever conflict with other radii in current
-                return [ideal_radius, current[i][0] + (angle / 2)]
+            for i in range(1, len(current)):
+                angle = current[i][0] - current[i - 1][0]
+                if current[i][1] * angle > 20 and (current[i][0] + (angle / 2)) < angle_bounds[1]:
+                    # TODO: does ideal_radius ever conflict with other radii in current
+                    return [current_radius, current[i][0] + (angle / 2)]
+
+            # no empty spaces => current_radius must be adjusted
+            if iterations == 3:
+                current_radius = ideal_radius
+
+            if iterations < 3 or too_small:
+                current_radius += 10
+            elif current_radius >= 10:
+                current_radius -= 10
+
+            if current_radius < 10:
+                too_small = True
+                current_radius = ideal_radius
+                
+            iterations += 1
 
     else:
 
