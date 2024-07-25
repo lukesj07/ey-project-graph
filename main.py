@@ -115,17 +115,23 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
     wb.save("test.xlsx")
 
 def calculate_position(percent: float, max_r: int, positions: list[list[list], idx: int, angle_bounds: list[float]]) -> list[float]:
-    # radius_of_each_circle = 10
+    # radius_of_each_circle = 10 # - not to be confused with radius which = dist. from circle's center to the center of the graph circle
+    # NOTE: each position should be of the form [angle, radius, id]
     if 75 <= percent <= 100:
-        # TODO: check if current is empty or only has one element
-        # [angle, radius, id]
-        current = sorted(positions[idx])
+        ideal_radius = round(R * (1 - percent))
+        # where R is the radius length from 75%-100%
+        current = [i for i in sorted(positions[idx]) if abs(ideal_radius - i[1]) <= 20]
+        if len(current) == 0:
+            return [ideal_radius, angle_bounds[0]]
+        elif len(current) == 1:
+            return [ideal_radius, angle_bounds[0] + (20 / ideal_radius)] # arc_length/radius
+            
+        # TODO: handle case where there is never an empty space
         for i in range(1, len(current)):
             angle = current[i][0] - current[i - 1][0]
-            # R = dist of two positions with the above angles
-            if R * angle > 20:
-                # empty space
-                return [R, current[i][0] + angle / 2]
+            if current[i][1] * angle > 20:
+                # TODO: does ideal_radius ever conflict with other radii in current
+                return [ideal_radius, current[i][0] + angle / 2]
 
 
     else:
