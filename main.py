@@ -129,10 +129,9 @@ def calculate_position(percent: float, max_r: int, positions: list[list[list], i
         # TODO: handle case where there is never an empty space
         for i in range(1, len(current)):
             angle = current[i][0] - current[i - 1][0]
-            if current[i][1] * angle > 20:
+            if current[i][1] * angle > 20 and (current[i][0] + (angle / 2)) < angle_bounds[1]:
                 # TODO: does ideal_radius ever conflict with other radii in current
-                return [ideal_radius, current[i][0] + angle / 2]
-
+                return [ideal_radius, current[i][0] + (angle / 2)]
 
     else:
 
