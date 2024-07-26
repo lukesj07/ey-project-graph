@@ -115,11 +115,11 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
 
     wb.save("test.xlsx")
 
-def calculate_position(percent: float, max_r: int, positions: list[list[list], idx: int, angle_bounds: list[float]]) -> list[float]:
+def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float]) -> list[float]:
     # radius_of_each_circle = 10 # - not to be confused with the radius that equals dist. from circle's center to the center of the graph circle
-    # NOTE: each position should be in the format [angle, radius, id]
+    # NOTE: each position should be in the format [angle, radius, id, health]
     if 75 <= percent <= 100:
-        ideal_radius = round(R * (1 - percent))
+        ideal_radius = round(150 * (1 - percent))
         current_radius = ideal_radius
         iterations = 0
         too_small = False
@@ -151,11 +151,40 @@ def calculate_position(percent: float, max_r: int, positions: list[list[list], i
                 current_radius = ideal_radius
                 
             iterations += 1
-
     else:
+        ideal_radius = round(160 * (1 - percent) + 150)
+        current_radius = ideal_radius
+        iterations = 0
+        too_small = False
+        while True:
+            current = [i for i in sorted(positions[idx]) if abs(current_radius - i[1]) <= 20]
+            if len(current) == 0:
+                return [current_radius, angle_bounds[0]] # Might have to add shifting factor
+            elif len(current) == 1:
+                return [current_radius, angle_bounds[0] + (20 / current_radius)] # arc_length/radius
+            
+            for i in range(1, len(current)):
+                angle = current[i][0] - current[i - 1][0]
+                if current[i][1] * angle > 20 and (current[i][0] + (angle / 2)) < angle_bounds[1]:
+                    # TODO: does ideal_radius ever conflict with other radii in current
+                    return [current_radius, current[i][0] + (angle / 2)]
 
+            # no empty spaces => current_radius must be adjusted
+            if iterations == 3:
+                current_radius = ideal_radius
 
-    # return (max_r * (1 - percent))
+            if iterations < 3 or too_small:
+                current_radius += 10
+            elif current_radius >= 10:
+                current_radius -= 10
+
+            if current_radius < 10:
+                too_small = True
+                current_radius = ideal_radius
+                
+            iterations += 1
+
+    return [None, None]
 
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
@@ -167,9 +196,11 @@ def main() -> None:
     df = df.drop("index", axis=1)
     names = sort_project_status(df)
     ids = create_radar_ids()
+    print(list(df.columns))
     # generate_excel(create_radar_ids(), names)
-    positions = [] # list[list[list[str, float, float]]]
-    idx = 0
+    positions = [] # list[list[list[float, float, str, str]]] theta, r, id, health
+    print(len(names))
+    print(*[len(name) for name in names])
     for i in range(len(names)):
         for name in names[i]:
             row_num = 0
@@ -178,39 +209,43 @@ def main() -> None:
                     row_num = j
                     break
             # TODO: r is wrong
-            r = calculate_radius(df["%Project Duration Completed2"][row_num])
-            percent = df["%Project Duration Completed"][row_num]
+            percent = df["%Project Duration Completed2"][row_num]
             match df["Service Category"][row_num]:
                 case "InfoSec Protection Services":
                     # 0 - pi/4
-                    if 75 <= percent <= 100:
-                        
-                    pass
+                    r, a = calculate_position(percent, positions, 0, [0, math.pi/4])
+                    positions[0].append([a, r, ids[row_num], df["Overall Health"][row_num]])
                 case "IT Risk Management":
                     # pi/4 - pi/2
-                    pass
+                    r, a = calculate_position(percent, positions, 1, [math.pi/4, math.pi/2])
+                    positions[1].append([a, r, ids[row_num], df["Overall Health"][row_num]])
                 case "Identity and Access":
                     # pi/2 - 3pi/4
-                    pass
+                    r, a = calculate_position(percent, positions, 2, [math.pi/2, 3*math.pi/4])
+                    positions[2].append([a, r, ids[row_num], df["Overall Health"][row_num]])
                 case "Threat Management":
                     # 3pi/4 - pi
-                    pass
+                    r, a = calculate_position(percent, positions, 3, [3*math.pi/4, math.pi])
+                    positions[3].append([a, r, ids[row_num], df["Overall Health"][row_num]])
                 case "InfoSec Program Management":
                     # pi - 5pi/4
-                    pass
+                    r, a = calculate_position(percent, positions, 4, [math.pi, 5*math.pi/4])
+                    positions[4].append([a, r, ids[row_num], df["Overall Health"][row_num]])
                 case "InfoSec Program Support":
                     # 5pi/4 - 3pi/2
-                    pass
+                    r, a = calculate_position(percent, positions, 5, [5*math.pi/4, 3*math.pi/2])
+                    positions[5].append([a, r, ids[row_num], df["Overall Health"][row_num]])
                 case "Security Design Services":
                     # 3pi/2 - 7pi/4
-                    pass
+                    r, a = calculate_position(percent, positions, 6, [3*math.pi/2, 7*math.pi/4])
+                    positions[6].append([a, r, ids[row_num], df["Overall Health"][row_num]])
                 case "Compliance & Assurance":
                     # 7pi/4 - 2pi
-                    pass
+                    r, a = calculate_position(percent, positions, 7, [7*math.pi/4, 2*math.pi])
+                    positions[7].append([a, r, ids[row_num], df["Overall Health"][row_num]])
                 case _:
                     print("This should not run")
-            idx += 1
-
+    
     fig, ax = plt.subplots(frameon=False)
 
     ax.imshow(mpimg.imread(IMG_PATH), aspect="auto")
