@@ -56,7 +56,7 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
     gkey = "Green Status: " + str(len(names[0])) + " projects"
     akey = "Amber Status: " + str(len(names[1])) + " projects"
     okey = "On Hold: " + str(len(names[2])) + " projects"
-    rkey = "Red (Closed) Status: " + str(len(names[3])) + " projects"
+    rkey = "Red Status: " + str(len(names[3])) + " projects"
 
     data = dict()
     data[gkey] = []
@@ -202,8 +202,8 @@ def main() -> None:
     df = df.drop("index", axis=1)
     names = sort_project_status(df)
     ids = create_radar_ids()
-    print(list(df.columns))
-    # generate_excel(create_radar_ids(), names)
+    # print(list(df.columns))
+    generate_excel(create_radar_ids(), names)
     positions = [[], [], [], [], [], [], [], [], []] # list[list[list[float, float, str, str]]] theta, r, id, health
     # print(len(names))
     # print(*[len(name) for name in names])
