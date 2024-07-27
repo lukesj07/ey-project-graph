@@ -46,7 +46,7 @@ def sort_project_status(df: pd.DataFrame) -> list[list[str]]:
                 amber.append(row["Project Name"])
             case "ON HOLD":
                 hold.append(row["Project Name"])
-            case "RED": # check
+            case "Closed": # check
                 red.append(row["Project Name"])
     return [green, amber, hold, red]
 
@@ -54,7 +54,7 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
     gkey = "Green Status: " + str(len(names[0])) + " projects"
     akey = "Amber Status: " + str(len(names[1])) + " projects"
     okey = "On Hold: " + str(len(names[2])) + " projects"
-    rkey = "Red Status: " + str(len(names[3])) + " projects"
+    rkey = "Red (Closed) Status: " + str(len(names[3])) + " projects"
 
     data = dict()
     data[gkey] = []
@@ -118,6 +118,8 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float]) -> list[float]:
     # radius_of_each_circle = 10 # - not to be confused with the radius that equals dist. from circle's center to the center of the graph circle
     # NOTE: each position should be in the format [angle, radius, id, health]
+    print(f"percent: {percent}")
+
     if 75 <= percent <= 100:
         ideal_radius = round(150 * (1 - percent))
         current_radius = ideal_radius
@@ -188,6 +190,7 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
 
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
+    # print(df["Project Name"])
     df = df.dropna(how="all", axis=1)
 
     df.columns = df.iloc[0].tolist()
@@ -202,6 +205,7 @@ def main() -> None:
     print(len(names))
     print(*[len(name) for name in names])
     for i in range(len(names)):
+        print(names[i])
         for name in names[i]:
             row_num = 0
             for j in range(len(df["Project Name"])):
@@ -262,7 +266,7 @@ def main() -> None:
                     curr_color = "#e66419"
                 case "ON HOLD":
                     curr_color = "#808080"
-                case "RED": # check
+                case "Closed": # check
                     curr_color = "#ff0000"
             circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, p[1]*math.sin(p[0]) + IMG_HEIGHT//2), 10, color=curr_color, fill=True)
             ax.add_artist(circle)
