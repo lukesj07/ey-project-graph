@@ -198,7 +198,7 @@ def main() -> None:
     ids = create_radar_ids()
     print(list(df.columns))
     # generate_excel(create_radar_ids(), names)
-    positions = [] # list[list[list[float, float, str, str]]] theta, r, id, health
+    positions = [[], [], [], [], [], [], [], [], []] # list[list[list[float, float, str, str]]] theta, r, id, health
     print(len(names))
     print(*[len(name) for name in names])
     for i in range(len(names)):
