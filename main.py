@@ -248,13 +248,25 @@ def main() -> None:
     
     fig, ax = plt.subplots(frameon=False)
 
-    ax.imshow(mpimg.imread(IMG_PATH), aspect="auto")
-
-    circle = plt.Circle((660, IMG_HEIGHT//2), 10, color="green", fill=True)
-    ax.add_artist(circle)
-    ax.text(660, IMG_HEIGHT//2, "te", ha="center", va="center", fontsize=7, color="white")
     ax.set_aspect("equal", adjustable="box")
     ax.set_axis_off()
+    ax.imshow(mpimg.imread(IMG_PATH), aspect="auto")
+    # theta, r, id, health
+    for c in positions:
+        for p in c:
+            curr_color = ""
+            match p[3]:
+                case "GREEN":
+                    curr_color = "#00ff00"
+                case "Amber":
+                    curr_color = "#e66419"
+                case "ON HOLD":
+                    curr_color = "#808080"
+                case "RED": # check
+                    curr_color = "#ff0000"
+            circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, p[1]*math.sin(p[0]) + IMG_HEIGHT//2), 10, color=curr_color, fill=True)
+            ax.add_artist(circle)
+            ax.text(p[1]*math.cos(p[0]) + IMG_WIDTH//2, p[1]*math.sin(p[0]) + IMG_HEIGHT//2, p[2], ha="center", va="center", fontsize=7, color="white")
 
     # Save the figure without borders
     fig.savefig("radar.png", dpi=250, bbox_inches="tight")
