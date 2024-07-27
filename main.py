@@ -1,3 +1,5 @@
+# TODO: FIX XLSX FILE
+
 from operator import ge
 import openpyxl
 import pandas as pd
@@ -118,10 +120,11 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float]) -> list[float]:
     # radius_of_each_circle = 10 # - not to be confused with the radius that equals dist. from circle's center to the center of the graph circle
     # NOTE: each position should be in the format [angle, radius, id, health]
-    print(f"percent: {percent}")
 
-    if 75 <= percent <= 100:
-        ideal_radius = round(150 * (1 - percent))
+    if 0.75 <= percent <= 1:
+        # print("yaslhflksdjflkjsdflkj")
+        # print(f"percent: {percent}")
+        ideal_radius = round(150 * (1 - percent) + 15)
         current_radius = ideal_radius
         iterations = 0
         too_small = False
@@ -129,9 +132,9 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
             # where R is the radius length from 75%-100%
             current = [i for i in sorted(positions[idx]) if abs(current_radius - i[1]) <= 20]
             if len(current) == 0:
-                return [current_radius, angle_bounds[0]] # Might have to add shifting factor
+                return [current_radius + 15, angle_bounds[0]] # Might have to add shifting factor
             elif len(current) == 1:
-                return [current_radius, angle_bounds[0] + (20 / current_radius)] # arc_length/radius
+                return [current_radius + 15, angle_bounds[0] + (20 / current_radius)] # arc_length/radius
             
             for i in range(1, len(current)):
                 angle = current[i][0] - current[i - 1][0]
@@ -202,10 +205,10 @@ def main() -> None:
     print(list(df.columns))
     # generate_excel(create_radar_ids(), names)
     positions = [[], [], [], [], [], [], [], [], []] # list[list[list[float, float, str, str]]] theta, r, id, health
-    print(len(names))
-    print(*[len(name) for name in names])
+    # print(len(names))
+    # print(*[len(name) for name in names])
     for i in range(len(names)):
-        print(names[i])
+        # print(names[i])
         for name in names[i]:
             row_num = 0
             for j in range(len(df["Project Name"])):
@@ -214,6 +217,7 @@ def main() -> None:
                     break
             # TODO: r is wrong
             percent = df["%Project Duration Completed2"][row_num]
+            # print(ids[row_num])
             match df["Service Category"][row_num]:
                 case "InfoSec Protection Services":
                     # 0 - pi/4
