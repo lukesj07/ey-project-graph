@@ -120,76 +120,21 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float]) -> list[float]:
     # radius_of_each_circle = 10 # - not to be confused with the radius that equals dist. from circle's center to the center of the graph circle
     # NOTE: each position should be in the format [angle, radius, id, health]
+    overlapping = []
+    ideal_radius = round(150 * (1 - percent) + 15) if 0.75 <= percent <= 1.0 else round(160 * (0.75 - percent) + 150)
+    if len(positions[idx]) == 0:
+        return [ideal_radius, angle_bounds[0] + (20/ideal_radius)]
 
-    if 0.75 <= percent <= 1:
-        # print("yaslhflksdjflkjsdflkj")
-        # print(f"percent: {percent}")
-        ideal_radius = round(150 * (1 - percent) + 15)
-        current_radius = ideal_radius
-        iterations = 0
-        too_small = False
-        while True:
-            # where R is the radius length from 75%-100%
-            current = [i for i in sorted(positions[idx]) if abs(current_radius - i[1]) <= 20]
-            if len(current) == 0:
-                return [current_radius + 15, angle_bounds[0]] # Might have to add shifting factor
-            elif len(current) == 1:
-                return [current_radius + 15, angle_bounds[0] + (20 / current_radius)] # arc_length/radius
-            
-            for i in range(1, len(current)):
-                angle = current[i][0] - current[i - 1][0]
-                if current[i][1] * angle > 20 and (current[i][0] + (angle / 2)) < angle_bounds[1]:
-                    # TODO: does ideal_radius ever conflict with other radii in current
-                    return [current_radius, current[i][0] + (angle / 2)]
+    max_points = (math.pi/4 * ideal_radius) // 20
+    for p in positions[idx]:
+        if (angle_bounds[0] < p[0] < angle_bounds[1]) and abs(p[1] - ideal_radius) < 30:
+            overlapping.append(p)
 
-            # no empty spaces => current_radius must be adjusted
-            if iterations == 3:
-                current_radius = ideal_radius
-
-            if iterations < 3 or too_small:
-                current_radius += 10
-            elif current_radius >= 10:
-                current_radius -= 10
-
-            if current_radius < 10:
-                too_small = True
-                current_radius = ideal_radius
-                
-            iterations += 1
+    if len(overlapping) >= max_points:
+        calculate_position(percent-0.05, positions, idx, angle_bounds)
     else:
-        ideal_radius = round(160 * (1 - percent) + 150)
-        current_radius = ideal_radius
-        iterations = 0
-        too_small = False
-        while True:
-            current = [i for i in sorted(positions[idx]) if abs(current_radius - i[1]) <= 20]
-            if len(current) == 0:
-                return [current_radius, angle_bounds[0]] # Might have to add shifting factor
-            elif len(current) == 1:
-                return [current_radius, angle_bounds[0] + (20 / current_radius)] # arc_length/radius
-            
-            for i in range(1, len(current)):
-                angle = current[i][0] - current[i - 1][0]
-                if current[i][1] * angle > 20 and (current[i][0] + (angle / 2)) < angle_bounds[1]:
-                    # TODO: does ideal_radius ever conflict with other radii in current
-                    return [current_radius, current[i][0] + (angle / 2)]
-
-            # no empty spaces => current_radius must be adjusted
-            if iterations == 3:
-                current_radius = ideal_radius
-
-            if iterations < 3 or too_small:
-                current_radius += 10
-            elif current_radius >= 10:
-                current_radius -= 10
-
-            if current_radius < 10:
-                too_small = True
-                current_radius = ideal_radius
-                
-            iterations += 1
-
-    return [None, None]
+        max_a = max([p[0] for p in overlapping])
+        return [ideal_radius, max_a + (20/ideal_radius)]
 
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
@@ -218,6 +163,7 @@ def main() -> None:
             # TODO: r is wrong
             percent = df["%Project Duration Completed2"][row_num]
             # print(ids[row_num])
+            print()
             match df["Service Category"][row_num]:
                 case "InfoSec Protection Services":
                     # 0 - pi/4
@@ -254,6 +200,8 @@ def main() -> None:
                 case _:
                     print("This should not run")
     
+    #print(df["Service Category"][0])
+
     fig, ax = plt.subplots(frameon=False)
 
     ax.set_aspect("equal", adjustable="box")
