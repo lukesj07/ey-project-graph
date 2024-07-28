@@ -1,5 +1,3 @@
-# TODO: FIX XLSX FILE
-
 from operator import ge
 import openpyxl
 import pandas as pd
@@ -48,7 +46,7 @@ def sort_project_status(df: pd.DataFrame) -> list[list[str]]:
                 amber.append(row["Project Name"])
             case "ON HOLD":
                 hold.append(row["Project Name"])
-            case "Closed": # check
+            case "RED": # check
                 red.append(row["Project Name"])
     return [green, amber, hold, red]
 
@@ -118,23 +116,29 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
     wb.save("test.xlsx")
 
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float]) -> list[float]:
-    # radius_of_each_circle = 10 # - not to be confused with the radius that equals dist. from circle's center to the center of the graph circle
-    # NOTE: each position should be in the format [angle, radius, id, health]
     overlapping = []
-    ideal_radius = round(150 * (1 - percent) + 15) if 0.75 <= percent <= 1.0 else round(160 * (0.75 - percent) + 150)
-    if len(positions[idx]) == 0:
+    # ideal_radius = round(150 * (1 - percent) + 15) if 0.75 <= percent <= 1.0 else round(160 * (0.75 - percent) + 150)
+    if 0.75 <= percent <= 1.0:        
+        ideal_radius = round(150 * (1 - percent) + 15) 
+    elif percent < 0.75:
+        ideal_radius = round(160 * (0.75 - percent) + 150)
+   
+    max_points = ((math.pi/4 * ideal_radius) // 20) - 1
+    for c in positions:
+        for p in c:
+            if abs(p[1] - ideal_radius) < 20 and (angle_bounds[0] - 0.1) <= p[0] <= (angle_bounds[1] + 0.1):
+                overlapping.append(p)
+
+    if len(overlapping) == 0:
         return [ideal_radius, angle_bounds[0] + (20/ideal_radius)]
 
-    max_points = (math.pi/4 * ideal_radius) // 20
-    for p in positions[idx]:
-        if (angle_bounds[0] < p[0] < angle_bounds[1]) and abs(p[1] - ideal_radius) < 30:
-            overlapping.append(p)
-
     if len(overlapping) >= max_points:
-        calculate_position(percent-0.05, positions, idx, angle_bounds)
+        ideal_radius, angle = calculate_position(percent-0.05, positions, idx, angle_bounds)
     else:
         max_a = max([p[0] for p in overlapping])
         return [ideal_radius, max_a + (20/ideal_radius)]
+
+    return [ideal_radius, angle]
 
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
@@ -156,47 +160,53 @@ def main() -> None:
         # print(names[i])
         for name in names[i]:
             row_num = 0
+            closed_count = 0
             for j in range(len(df["Project Name"])):
+                if df["Overall Health"][j] == "Closed":
+                    closed_count += 1
                 if df["Project Name"][j] == name:
                     row_num = j
                     break
+
+
             # TODO: r is wrong
             percent = df["%Project Duration Completed2"][row_num]
             # print(ids[row_num])
-            print()
+            if df["Project Name"][row_num][0] == "c" or df["Project Name"][row_num] == "Project jkl":
+                print(df["%Project Duration Completed2"][row_num])
             match df["Service Category"][row_num]:
                 case "InfoSec Protection Services":
                     # 0 - pi/4
                     r, a = calculate_position(percent, positions, 0, [0, math.pi/4])
-                    positions[0].append([a, r, ids[row_num], df["Overall Health"][row_num]])
+                    positions[0].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case "IT Risk Management":
                     # pi/4 - pi/2
                     r, a = calculate_position(percent, positions, 1, [math.pi/4, math.pi/2])
-                    positions[1].append([a, r, ids[row_num], df["Overall Health"][row_num]])
+                    positions[1].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case "Identity and Access":
                     # pi/2 - 3pi/4
                     r, a = calculate_position(percent, positions, 2, [math.pi/2, 3*math.pi/4])
-                    positions[2].append([a, r, ids[row_num], df["Overall Health"][row_num]])
+                    positions[2].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case "Threat Management":
                     # 3pi/4 - pi
                     r, a = calculate_position(percent, positions, 3, [3*math.pi/4, math.pi])
-                    positions[3].append([a, r, ids[row_num], df["Overall Health"][row_num]])
+                    positions[3].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case "InfoSec Program Management":
                     # pi - 5pi/4
                     r, a = calculate_position(percent, positions, 4, [math.pi, 5*math.pi/4])
-                    positions[4].append([a, r, ids[row_num], df["Overall Health"][row_num]])
+                    positions[4].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case "InfoSec Program Support":
                     # 5pi/4 - 3pi/2
                     r, a = calculate_position(percent, positions, 5, [5*math.pi/4, 3*math.pi/2])
-                    positions[5].append([a, r, ids[row_num], df["Overall Health"][row_num]])
+                    positions[5].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case "Security Design Services":
                     # 3pi/2 - 7pi/4
                     r, a = calculate_position(percent, positions, 6, [3*math.pi/2, 7*math.pi/4])
-                    positions[6].append([a, r, ids[row_num], df["Overall Health"][row_num]])
+                    positions[6].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case "Compliance & Assurance":
                     # 7pi/4 - 2pi
                     r, a = calculate_position(percent, positions, 7, [7*math.pi/4, 2*math.pi])
-                    positions[7].append([a, r, ids[row_num], df["Overall Health"][row_num]])
+                    positions[7].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case _:
                     print("This should not run")
     
@@ -218,11 +228,11 @@ def main() -> None:
                     curr_color = "#e66419"
                 case "ON HOLD":
                     curr_color = "#808080"
-                case "Closed": # check
+                case "RED": # check
                     curr_color = "#ff0000"
-            circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, p[1]*math.sin(p[0]) + IMG_HEIGHT//2), 10, color=curr_color, fill=True)
+            circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, IMG_HEIGHT//2 - p[1]*math.sin(p[0])), 10, color=curr_color, fill=True)
             ax.add_artist(circle)
-            ax.text(p[1]*math.cos(p[0]) + IMG_WIDTH//2, p[1]*math.sin(p[0]) + IMG_HEIGHT//2, p[2], ha="center", va="center", fontsize=7, color="white")
+            ax.text(p[1]*math.cos(p[0]) + IMG_WIDTH//2,  IMG_HEIGHT//2 - p[1]*math.sin(p[0]), p[2], ha="center", va="center", fontsize=7, color="white")
 
     # Save the figure without borders
     fig.savefig("radar.png", dpi=250, bbox_inches="tight")
