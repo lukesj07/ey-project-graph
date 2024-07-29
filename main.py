@@ -124,7 +124,9 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
         ideal_radius = round(150 * (1 - out) + 15)
 
     elif percent < 0.75:
-        ideal_radius = round(160 * (0.75 - percent) + 150)
+        # output = output_start + ((output_end - output_start) / (input_end - input_start)) * (input_percent - input_start)
+        out = 0 + ((1 - 0) / (0.75 - 0)) * (percent - 0)
+        ideal_radius = round(160 * (1 - out) + 150)
     
     
 
@@ -139,14 +141,16 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
         if abs(p[1] - ideal_radius) < 12 and (angle_bounds[0] - 0.1) <= p[0] <= (angle_bounds[1] + 0.1):
             overlapping.append(p)
     
-    if "Project ghi" in name:     
+    if "c1" in name:     
         print(f"IDEAL_RADIUS: {ideal_radius}")
         print(overlapping)
 
-
     if len(overlapping) == 0:
-        print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (20/ideal_radius)}")
-        return [ideal_radius, angle_bounds[0] + (15/(ideal_radius * 2))]
+        if "Project bcd" in name:
+            print(f"BCD {angle_bounds[0]} + {ideal_radius}")
+
+        print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))}")
+        return [ideal_radius, angle_bounds[0] + (10/(ideal_radius * 2))]
 
     if len(overlapping) >= max_points:
         # print(f"NAME: {name}")
@@ -154,7 +158,7 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
         
     else:
         max_a = max([p[0] for p in overlapping])
-        print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (20/ideal_radius)}")
+        print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))}")
         return [ideal_radius, max_a + (30/(ideal_radius*2))]
 
     print(f"default - name: {name} - r: {ideal_radius} - angle: {angle}")
@@ -217,7 +221,7 @@ def main() -> None:
                     positions[4].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case "InfoSec Program Support":
                     # 5pi/4 - 3pi/2
-                    r, a = calculate_position(percent, positions, 5, [5*math.pi/4, 3*math.pi/2], df["Project Name"][row_num])
+                    r, a = calculate_position(percent, positions, 5, [5*math.pi/4+0.05, 3*math.pi/2], df["Project Name"][row_num])
                     positions[5].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
                 case "Security Design Services":
                     # 3pi/2 - 7pi/4
