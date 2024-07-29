@@ -117,43 +117,26 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
 
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float], name: str) -> list[float]:
     overlapping = []
-    # ideal_radius = round(150 * (1 - percent) + 15) if 0.75 <= percent <= 1.0 else round(160 * (0.75 - percent) + 150)
     if 0.75 <= percent <= 1.0:
-        # output = output_start + ((output_end - output_start) / (input_end - input_start)) * (input_percent - input_start)
         out = 0 + ((1 - 0) / (1 - 0.75)) * (percent - 0.75)
         ideal_radius = round(150 * (1 - out) + 15)
 
     elif percent < 0.75:
-        # output = output_start + ((output_end - output_start) / (input_end - input_start)) * (input_percent - input_start)
         out = 0 + ((1 - 0) / (0.75 - 0)) * (percent - 0)
         ideal_radius = round(160 * (1 - out) + 150)
     
     
+    max_points = ((math.pi/4 * ideal_radius) // 14) - 1
 
-    max_points = ((math.pi/4 * ideal_radius) // 20) - 1
-    """
-    for c in positions:
-        for p in c:
-            if abs(p[1] - ideal_radius) < 12 and (angle_bounds[0] - 0.1) <= p[0] <= (angle_bounds[1] + 0.1):
-                overlapping.append(p)
-     """
     for p in positions[idx]:
-        if abs(p[1] - ideal_radius) < 12 and (angle_bounds[0] - 0.1) <= p[0] <= (angle_bounds[1] + 0.1):
+        if abs(p[1] - ideal_radius) < 16 and (angle_bounds[0] - 0.1) <= p[0] <= (angle_bounds[1] + 0.1):
             overlapping.append(p)
     
-    if "c1" in name:     
-        print(f"IDEAL_RADIUS: {ideal_radius}")
-        print(overlapping)
-
     if len(overlapping) == 0:
-        if "Project bcd" in name:
-            print(f"BCD {angle_bounds[0]} + {ideal_radius}")
-
         print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))}")
         return [ideal_radius, angle_bounds[0] + (10/(ideal_radius * 2))]
 
     if len(overlapping) >= max_points:
-        # print(f"NAME: {name}")
         ideal_radius, angle = calculate_position(percent-0.01, positions, idx, angle_bounds, "recursive_call: " + name)
         
     else:
