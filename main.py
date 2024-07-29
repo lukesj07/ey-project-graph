@@ -115,37 +115,36 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
 
     wb.save("test.xlsx")
 
+
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float], name: str) -> list[float]:
-    overlapping = []
-    if 0.75 <= percent <= 1.0:
-        out = 0 + ((1 - 0) / (1 - 0.75)) * (percent - 0.75)
-        ideal_radius = round(150 * (1 - out) + 15)
+    while True:
+        overlapping = []
+        if 0.75 <= percent <= 1.0:
+            out = 0 + ((1 - 0) / (1 - 0.75)) * (percent - 0.75)
+            ideal_radius = round(150 * (1 - out) + 15)
 
-    elif percent < 0.75:
-        out = 0 + ((1 - 0) / (0.75 - 0)) * (percent - 0)
-        ideal_radius = round(160 * (1 - out) + 150)
+        elif percent < 0.75:
+            out = 0 + ((1 - 0) / (0.75 - 0)) * (percent - 0)
+            ideal_radius = round(160 * (1 - out) + 150)
     
     
-    max_points = ((math.pi/4 * ideal_radius) // 14) - 1
+        max_points = ((math.pi/4 * ideal_radius) // 14) - 1
 
-    for p in positions[idx]:
-        if abs(p[1] - ideal_radius) < 16 and (angle_bounds[0] - 0.1) <= p[0] <= (angle_bounds[1] + 0.1):
-            overlapping.append(p)
+        for p in positions[idx]:
+            if abs(p[1] - ideal_radius) < 16 and (angle_bounds[0] - 0.1) <= p[0] <= (angle_bounds[1] + 0.1):
+                overlapping.append(p)
     
-    if len(overlapping) == 0:
-        print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))}")
-        return [ideal_radius, angle_bounds[0] + (10/(ideal_radius * 2))]
+        if len(overlapping) == 0:
+            print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))}")
+            return [ideal_radius, angle_bounds[0] + (10/(ideal_radius * 2))]
 
-    if len(overlapping) >= max_points:
-        ideal_radius, angle = calculate_position(percent-0.01, positions, idx, angle_bounds, "recursive_call: " + name)
-        
-    else:
-        max_a = max([p[0] for p in overlapping])
-        print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))}")
-        return [ideal_radius, max_a + (30/(ideal_radius*2))]
+        if len(overlapping) >= max_points:
+            percent -= 0.01
+        else:
+            max_a = max([p[0] for p in overlapping])
+            print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))}")
+            return [ideal_radius, max_a + (30/(ideal_radius*2))]
 
-    print(f"default - name: {name} - r: {ideal_radius} - angle: {angle}")
-    return [ideal_radius, angle]
 
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
