@@ -117,6 +117,7 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
 
 
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float], name: str) -> list[float]:
+    i = 0
     while True:
         overlapping = []
         if 0.75 <= percent <= 1.0:
@@ -135,15 +136,17 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
                 overlapping.append(p)
     
         if len(overlapping) == 0:
-            print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))}")
+            print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))} - iters: {i}")
             return [ideal_radius, angle_bounds[0] + (10/(ideal_radius * 2))]
 
         if len(overlapping) >= max_points:
             percent -= 0.01
         else:
             max_a = max([p[0] for p in overlapping])
-            print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))}")
+            print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))} - iters: {i}")
             return [ideal_radius, max_a + (30/(ideal_radius*2))]
+
+        i += 1
 
 
 def main() -> None:
@@ -162,59 +165,67 @@ def main() -> None:
     positions = [[], [], [], [], [], [], [], [], []] # list[list[list[float, float, str, str]]] theta, r, id, health
     # print(len(names))
     # print(*[len(name) for name in names])
+    row_num = 0
     for i in range(len(names)):
         # print(names[i])
         for name in names[i]:
-            row_num = 0
+            # row_num = 0
             closed_count = 0
+            """
             for j in range(len(df["Project Name"])):
                 if df["Overall Health"][j] == "Closed":
                     closed_count += 1
                 if df["Project Name"][j] == name:
                     row_num = j
                     break
+            """
+            
+            row_num2 = 0
+            for idx, row in df.iterrows():
+                if name in row:
+                    row_num2 = idx
+                    break
 
 
-            # TODO: r is wrong
-            percent = df["%Project Duration Completed2"][row_num]
-            # print(ids[row_num])
-            # if df["Project Name"][row_num][0] == "c" or df["Project Name"][row_num] == "Project jkl":
-                # print(df["%Project Duration Completed2"][row_num])
-            match df["Service Category"][row_num]:
+            percent = df["%Project Duration Completed2"][row_num2]
+
+            match df["Service Category"][row_num2]:
                 case "InfoSec Protection Services":
                     # 0 - pi/4
-                    r, a = calculate_position(percent, positions, 0, [0, math.pi/4], df["Project Name"][row_num])
-                    positions[0].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 0, [0, math.pi/4], name)
+                    positions[0].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num2]])
                 case "IT Risk Management":
                     # pi/4 - pi/2
-                    r, a = calculate_position(percent, positions, 1, [math.pi/4, math.pi/2], df["Project Name"][row_num])
-                    positions[1].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 1, [math.pi/4, math.pi/2], name)
+                    positions[1].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num2]])
                 case "Identity and Access":
                     # pi/2 - 3pi/4
-                    r, a = calculate_position(percent, positions, 2, [math.pi/2, 3*math.pi/4], df["Project Name"][row_num])
-                    positions[2].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 2, [math.pi/2, 3*math.pi/4], name)
+                    positions[2].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num2]])
                 case "Threat Management":
                     # 3pi/4 - pi
-                    r, a = calculate_position(percent, positions, 3, [3*math.pi/4, math.pi], df["Project Name"][row_num])
-                    positions[3].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 3, [3*math.pi/4, math.pi], name)
+                    positions[3].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num2]])
                 case "InfoSec Program Management":
                     # pi - 5pi/4
-                    r, a = calculate_position(percent, positions, 4, [math.pi, 5*math.pi/4], df["Project Name"][row_num])
-                    positions[4].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 4, [math.pi, 5*math.pi/4], name)
+                    positions[4].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num2]])
                 case "InfoSec Program Support":
                     # 5pi/4 - 3pi/2
-                    r, a = calculate_position(percent, positions, 5, [5*math.pi/4+0.05, 3*math.pi/2], df["Project Name"][row_num])
-                    positions[5].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 5, [5*math.pi/4+0.05, 3*math.pi/2], name)
+                    positions[5].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num2]])
                 case "Security Design Services":
                     # 3pi/2 - 7pi/4
-                    r, a = calculate_position(percent, positions, 6, [3*math.pi/2, 7*math.pi/4], df["Project Name"][row_num])
-                    positions[6].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 6, [3*math.pi/2, 7*math.pi/4], name)
+                    positions[6].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num2]])
                 case "Compliance & Assurance":
                     # 7pi/4 - 2pi
-                    r, a = calculate_position(percent, positions, 7, [7*math.pi/4, 2*math.pi], df["Project Name"][row_num])
-                    positions[7].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 7, [7*math.pi/4, 2*math.pi], name)
+                    positions[7].append([a, r, ids[row_num - closed_count], df["Overall Health"][row_num2]])
                 case _:
                     print("This should not run")
+
+            row_num += 1
     
     #print(df["Service Category"][0])
 
