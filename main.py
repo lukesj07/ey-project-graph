@@ -173,11 +173,11 @@ def main() -> None:
             match df["Service Category"][row_num]:
                 case "InfoSec Protection Services":
                     # 0 - pi/4
-                    r, a = calculate_position(percent, positions, 0, [0, math.pi/4], name)
+                    r, a = calculate_position(percent, positions, 0, [0.01, math.pi/4], name)
                     positions[0].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
                 case "IT Risk Management":
                     # pi/4 - pi/2
-                    r, a = calculate_position(percent, positions, 1, [math.pi/4, math.pi/2], name)
+                    r, a = calculate_position(percent, positions, 1, [math.pi/4+0.05, math.pi/2], name)
                     positions[1].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
                 case "Identity and Access":
                     # pi/2 - 3pi/4
@@ -185,11 +185,11 @@ def main() -> None:
                     positions[2].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
                 case "Threat Management":
                     # 3pi/4 - pi
-                    r, a = calculate_position(percent, positions, 3, [3*math.pi/4, math.pi], name)
+                    r, a = calculate_position(percent, positions, 3, [3*math.pi/4+0.05, math.pi], name)
                     positions[3].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
                 case "InfoSec Program Management":
                     # pi - 5pi/4
-                    r, a = calculate_position(percent, positions, 4, [math.pi, 5*math.pi/4], name)
+                    r, a = calculate_position(percent, positions, 4, [math.pi + 0.01, 5*math.pi/4], name)
                     positions[4].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
                 case "InfoSec Program Support":
                     # 5pi/4 - 3pi/2
@@ -201,7 +201,7 @@ def main() -> None:
                     positions[6].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
                 case "Compliance & Assurance":
                     # 7pi/4 - 2pi
-                    r, a = calculate_position(percent, positions, 7, [7*math.pi/4, 2*math.pi], name)
+                    r, a = calculate_position(percent, positions, 7, [7*math.pi/4+0.07, 2*math.pi], name)
                     positions[7].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
                 case _:
                     print("This should not run")
