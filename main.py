@@ -1,4 +1,5 @@
 from operator import ge
+from numpy.lib.function_base import angle
 import openpyxl
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -140,8 +141,11 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
             percent -= 0.01
         else:
             max_a = max([p[0] for p in overlapping])
-            print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))} - iters: {i}")
-            return [ideal_radius, max_a + (30/(ideal_radius*2))]
+            if max_a + (20/(ideal_radius*2)) > angle_bounds[1]:
+                percent -= 0.01
+            else:
+                print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))} - iters: {i}")
+                return [ideal_radius, max_a + (30/(ideal_radius*2))]
 
         i += 1
 
