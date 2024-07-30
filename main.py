@@ -96,22 +96,22 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
     df.insert(3," ","")
     df.insert(5,"  ","")
 
-    df.to_excel("test.xlsx", index=False)
-    wb = openpyxl.load_workbook("test.xlsx")
+    df.to_excel("legend.xlsx", index=False)
+    wb = openpyxl.load_workbook("legend.xlsx")
     ws = wb.active
     for c in ["A", "C", "E", "G"]:
         for i in range(1, max_len+2):
             match c:
                 case "A":
-                    ws[c + str(i)].font = Font(color=colors.Color("00ff00"))
+                    ws[c + str(i)].font = Font(color=colors.Color("70ad46"))
                 case "C":
-                    ws[c + str(i)].font = Font(color=colors.Color("e66419"))
+                    ws[c + str(i)].font = Font(color=colors.Color("ffc000"))
                 case "E":
-                    ws[c + str(i)].font = Font(color=colors.Color("000000"))
+                    ws[c + str(i)].font = Font(color=colors.Color("7f7f7f"))
                 case "G":
-                    ws[c + str(i)].font = Font(color=colors.Color("ff0000"))
+                    ws[c + str(i)].font = Font(color=colors.Color("c00000"))
 
-    wb.save("test.xlsx")
+    wb.save("legend.xlsx")
 
 
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float], name: str) -> list[float]:
@@ -134,7 +134,7 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
                 overlapping.append(p)
     
         if len(overlapping) == 0:
-            print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))} - iters: {i}")
+            # print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))} - iters: {i}")
             return [ideal_radius, angle_bounds[0] + (10/(ideal_radius * 2))]
 
         if len(overlapping) >= max_points:
@@ -144,7 +144,7 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
             if max_a + (20/(ideal_radius*2)) > angle_bounds[1]:
                 percent -= 0.01
             else:
-                print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))} - iters: {i}")
+                # print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))} - iters: {i}")
                 return [ideal_radius, max_a + (30/(ideal_radius*2))]
 
         i += 1
@@ -224,21 +224,21 @@ def main() -> None:
             curr_color = ""
             match p[3]:
                 case "GREEN":
-                    curr_color = "#00ff00"
+                    curr_color = "#70ad46"
                 case "Amber":
-                    curr_color = "#e66419"
+                    curr_color = "#ffc000"
                 case "ON HOLD":
-                    curr_color = "#808080"
+                    curr_color = "#7f7f7f"
                 case "RED": 
-                    curr_color = "#ff0000"
+                    curr_color = "#c00000"
             circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, IMG_HEIGHT//2 - p[1]*math.sin(p[0])), 8, color=curr_color, fill=True)
             ax.add_artist(circle)
-            ax.text(p[1]*math.cos(p[0]) + IMG_WIDTH//2,  IMG_HEIGHT//2 - p[1]*math.sin(p[0]), p[2], ha="center", va="center", fontsize=6, color="white")
+            ax.text(p[1]*math.cos(p[0]) + IMG_WIDTH//2,  IMG_HEIGHT//2 - p[1]*math.sin(p[0]), p[2], ha="center", va="center", fontsize=5, color="white")
 
     # Save the figure without borders
     fig.savefig("radar.png", dpi=250, bbox_inches="tight")
 
-    plt.show()
+    #plt.show()
     
 
 if __name__ == "__main__":
