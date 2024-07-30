@@ -11,8 +11,6 @@ from openpyxl.styles import colors
 from openpyxl.styles import Font, Color
 from pandas.core.common import iterable_not_string
 
-# https://stackoverflow.com/questions/50172905/center-a-label-inside-a-circle-with-matplotlib
-
 DATA_PATH = "spreadsheet.xlsx"
 IMG_PATH = "img.jpg"
 
@@ -46,7 +44,7 @@ def sort_project_status(df: pd.DataFrame) -> list[list[str]]:
                 amber.append(row["Project Name"])
             case "ON HOLD":
                 hold.append(row["Project Name"])
-            case "RED": # check
+            case "RED":
                 red.append(row["Project Name"])
     return [green, amber, hold, red]
 
@@ -82,7 +80,6 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
             v.append(np.nan)
 
     df = pd.DataFrame.from_dict(data)
-    # print(df.head)
 
     def color(val: str) -> str:
         if val in df[gkey]:
@@ -151,7 +148,6 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
 
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
-    # print(df["Project Name"])
     df = df.dropna(how="all", axis=1)
 
     df.columns = df.iloc[0].tolist()
@@ -212,7 +208,6 @@ def main() -> None:
 
             id_idx += 1
     
-    #print(df["Service Category"][0])
 
     fig, ax = plt.subplots(frameon=False)
 
@@ -230,7 +225,7 @@ def main() -> None:
                     curr_color = "#e66419"
                 case "ON HOLD":
                     curr_color = "#808080"
-                case "RED": # check
+                case "RED": 
                     curr_color = "#ff0000"
             circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, IMG_HEIGHT//2 - p[1]*math.sin(p[0])), 8, color=curr_color, fill=True)
             ax.add_artist(circle)
