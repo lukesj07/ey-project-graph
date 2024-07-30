@@ -126,7 +126,7 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
             ideal_radius = round(160 * (1 - out) + 150)
     
     
-        max_points = ((math.pi/4 * ideal_radius) // 14) - 1
+        max_points = (((angle_bounds[1] - angle_bounds[0]) * ideal_radius) // 12) - 1
 
         for p in positions[idx]:
             if abs(p[1] - ideal_radius) < 16 and (angle_bounds[0] - 0.1) <= p[0] <= (angle_bounds[1] + 0.1):
@@ -235,7 +235,6 @@ def main() -> None:
     fig.savefig("radar.png", dpi=250, bbox_inches="tight")
 
     plt.show()
-    
     
 
 if __name__ == "__main__":
