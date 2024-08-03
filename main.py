@@ -41,11 +41,19 @@ def sort_project_status(df: pd.DataFrame) -> list[list[str]]:
         match row["Overall Health"]:
             case "GREEN":
                 green.append(row["Project Name"])
+            case "Green":
+                green.append(row["Project Name"])
+            case "AMBER":
+                amber.append(row["Project Name"])
             case "Amber":
                 amber.append(row["Project Name"])
             case "ON HOLD":
                 hold.append(row["Project Name"])
+            case "On Hold":
+                hold.append(row["Project Name"])
             case "RED":
+                red.append(row["Project Name"])
+            case "Red":
                 red.append(row["Project Name"])
     return [green, amber, hold, red]
 
@@ -225,11 +233,19 @@ def main() -> None:
             match p[3]:
                 case "GREEN":
                     curr_color = "#70ad46"
+                case "Green":
+                    curr_color = "#70ad46"
+                case "AMBER":
+                    curr_color = "#ffc000"
                 case "Amber":
                     curr_color = "#ffc000"
                 case "ON HOLD":
                     curr_color = "#7f7f7f"
+                case "On Hold":
+                    curr_color = "#7f7f7f"
                 case "RED": 
+                    curr_color = "#c00000"
+                case "Red": 
                     curr_color = "#c00000"
             circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, IMG_HEIGHT//2 - p[1]*math.sin(p[0])), 8, color=curr_color, fill=True)
             ax.add_artist(circle)
