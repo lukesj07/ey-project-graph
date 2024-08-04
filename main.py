@@ -188,6 +188,7 @@ def main() -> None:
 
             percent = df["%Project Duration Completed"][row_num]
 
+
             match df["Service Category"][row_num]:
                 case "InfoSec Protection Services":
                     # 0 - pi/4
@@ -217,7 +218,7 @@ def main() -> None:
                     # 3pi/2 - 7pi/4
                     r, a = calculate_position(percent, positions, 6, [3*math.pi/2, 7*math.pi/4], name)
                     positions[6].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
-                case "Compliance & Assurance":
+                case "Compliance and Assurance":
                     # 7pi/4 - 2pi
                     r, a = calculate_position(percent, positions, 7, [7*math.pi/4+0.07, 2*math.pi], name)
                     positions[7].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
