@@ -182,7 +182,7 @@ def main() -> None:
                     row_num = idx
                     break
 
-            percent = df["%Project Duration Completed2"][row_num]
+            percent = df["%Project Duration Completed"][row_num]
 
             match df["Service Category"][row_num]:
                 case "InfoSec Protection Services":
