@@ -38,15 +38,25 @@ def sort_project_status(df: pd.DataFrame) -> list[list[str]]:
     hold = []
     red = []
     for index, row in df.iterrows():
-        match row["Overall Health"].lower():
-            case "green":
+        match row["Overall Health"]:
+            case "GREEN":
                 green.append(row["Project Name"])
-            case "amber":
+            case "Green":
+                green.append(row["Project Name"])
+            case "AMBER":
                 amber.append(row["Project Name"])
-            case "on hold":
+            case "Amber":
+                amber.append(row["Project Name"])
+            case "ON HOLD":
                 hold.append(row["Project Name"])
-            case "red":
+            case "On Hold":
+                hold.append(row["Project Name"])
+            case "RED":
                 red.append(row["Project Name"])
+            case "Red":
+                red.append(row["Project Name"])
+            case _:
+                green.append(row["Project Name"])
     return [green, amber, hold, red]
 
 def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
@@ -222,15 +232,25 @@ def main() -> None:
     for c in positions:
         for p in c:
             curr_color = ""
-            match p[3].lower():
-                case "green":
+            match p[3]:
+                case "GREEN":
                     curr_color = "#70ad46"
-                case "amber":
+                case "Green":
+                    curr_color = "#70ad46"
+                case "AMBER":
                     curr_color = "#ffc000"
-                case "on hold":
+                case "Amber":
+                    curr_color = "#ffc000"
+                case "ON HOLD":
                     curr_color = "#7f7f7f"
-                case "red": 
+                case "On Hold":
+                    curr_color = "#7f7f7f"
+                case "RED": 
                     curr_color = "#c00000"
+                case "Red": 
+                    curr_color = "#c00000"
+                case _:
+                    curr_color = "#70ad46"
             circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, IMG_HEIGHT//2 - p[1]*math.sin(p[0])), 8, color=curr_color, fill=True)
             ax.add_artist(circle)
             ax.text(p[1]*math.cos(p[0]) + IMG_WIDTH//2,  IMG_HEIGHT//2 - p[1]*math.sin(p[0]), p[2], ha="center", va="center", fontsize=5, color="white")
