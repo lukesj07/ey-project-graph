@@ -55,6 +55,10 @@ def sort_project_status(df: pd.DataFrame) -> list[list[str]]:
                 red.append(row["Project Name"])
             case "Red":
                 red.append(row["Project Name"])
+            case "Cancel":
+                continue
+            case "Closed":
+                continue
             case _:
                 green.append(row["Project Name"])
     return [green, amber, hold, red]
@@ -249,6 +253,10 @@ def main() -> None:
                     curr_color = "#c00000"
                 case "Red": 
                     curr_color = "#c00000"
+                case "Cancel":
+                    continue
+                case "Closed":
+                    continue
                 case _:
                     curr_color = "#70ad46"
             circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, IMG_HEIGHT//2 - p[1]*math.sin(p[0])), 8, color=curr_color, fill=True)
