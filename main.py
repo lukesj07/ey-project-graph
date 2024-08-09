@@ -63,6 +63,7 @@ def sort_project_status(df: pd.DataFrame) -> list[list[str]]:
                 green.append(row["Project Name"])
     return [green, amber, hold, red]
 
+"""
 def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
     gkey = "Green Status: " + str(len(names[0])) + " projects"
     akey = "Amber Status: " + str(len(names[1])) + " projects"
@@ -126,7 +127,7 @@ def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
                     ws[c + str(i)].font = Font(color=colors.Color("c00000"))
 
     wb.save("legend.xlsx")
-
+"""
 
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float], name: str) -> list[float]:
     i = 0
@@ -134,7 +135,7 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
         overlapping = []
         if 0.75 <= percent <= 1.0:
             out = 0 + ((1 - 0) / (1 - 0.75)) * (percent - 0.75)
-            ideal_radius = round(150 * (1 - out) + 15)
+            ideal_radius = round(150 * (1 - out) + 25)
 
         elif percent < 0.75:
             out = 0 + ((1 - 0) / (0.75 - 0)) * (percent - 0)
@@ -149,7 +150,7 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
     
         if len(overlapping) == 0:
             # print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))} - iters: {i}")
-            return [ideal_radius, angle_bounds[0] + (10/(ideal_radius * 2))]
+            return [ideal_radius, angle_bounds[0] + (15/(ideal_radius * 2))]
 
         if len(overlapping) >= max_points:
             percent -= 0.01
@@ -173,11 +174,11 @@ def main() -> None:
     df = df.reset_index()
     df = df.drop("index", axis=1)
     names = sort_project_status(df)
-    ids = create_radar_ids()
-    generate_excel(create_radar_ids(), names)
+    # ids = create_radar_ids()
+    #generate_excel(create_radar_ids(), names)
     positions = [[], [], [], [], [], [], [], [], []] # list[list[list[float, float, str, str]]] theta, r, id, health
     
-    id_idx = 0
+    # id_idx = 0
     for i in range(len(names)):
         for name in names[i]:
             row_num = 0
@@ -192,40 +193,40 @@ def main() -> None:
             match df["Service Category"][row_num]:
                 case "InfoSec Protection Services":
                     # 0 - pi/4
-                    r, a = calculate_position(percent, positions, 0, [0.01, math.pi/4], name)
-                    positions[0].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 0, [0.03, math.pi/4], name)
+                    positions[0].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]]) #ids[id_idx]
                 case "IT Risk Management":
                     # pi/4 - pi/2
                     r, a = calculate_position(percent, positions, 1, [math.pi/4+0.05, math.pi/2], name)
-                    positions[1].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
+                    positions[1].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
                 case "Identity and Access":
                     # pi/2 - 3pi/4
                     r, a = calculate_position(percent, positions, 2, [math.pi/2, 3*math.pi/4], name)
-                    positions[2].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
+                    positions[2].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
                 case "Threat Management":
                     # 3pi/4 - pi
                     r, a = calculate_position(percent, positions, 3, [3*math.pi/4+0.05, math.pi], name)
-                    positions[3].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
+                    positions[3].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
                 case "InfoSec Program Management":
                     # pi - 5pi/4
                     r, a = calculate_position(percent, positions, 4, [math.pi + 0.01, 5*math.pi/4], name)
-                    positions[4].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
+                    positions[4].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
                 case "InfoSec Program Support":
                     # 5pi/4 - 3pi/2
                     r, a = calculate_position(percent, positions, 5, [5*math.pi/4+0.05, 3*math.pi/2], name)
-                    positions[5].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
+                    positions[5].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
                 case "Security Design Services":
                     # 3pi/2 - 7pi/4
-                    r, a = calculate_position(percent, positions, 6, [3*math.pi/2, 7*math.pi/4], name)
-                    positions[6].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 6, [3*math.pi/2+0.05, 7*math.pi/4], name)
+                    positions[6].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
                 case "Compliance and Assurance":
                     # 7pi/4 - 2pi
-                    r, a = calculate_position(percent, positions, 7, [7*math.pi/4+0.07, 2*math.pi], name)
-                    positions[7].append([a, r, ids[id_idx], df["Overall Health"][row_num]])
+                    r, a = calculate_position(percent, positions, 7, [7*math.pi/4+0.1, 2*math.pi], name)
+                    positions[7].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
                 case _:
                     print("This should not run")
 
-            id_idx += 1
+            # id_idx += 1
     
 
     fig, ax = plt.subplots(frameon=False)
