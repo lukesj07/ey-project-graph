@@ -13,15 +13,15 @@ IMG_HEIGHT = 720
 
 def sort_project_status(df: pd.DataFrame) -> dict[str, list[str]]:
     statuses = {"GREEN": [], "AMBER": [], "ON HOLD": [], "RED": []}
-    
     for index, row in df.iterrows():
-        health = str(row["Overall Health"]).upper()
-        
-        if health in statuses:
-            statuses[health].append(row["Project Name"])
-        elif health not in ["CANCELED", "CLOSED", "-"]:
-            statuses["GREEN"].append(row["Project Name"])  # default to GREEN for any unspecified health
-            
+        health = row["Overall Health"]
+
+        if pd.isna(health) or health == "":
+            statuses["GREEN"].append(row["Project Name"])
+        else:
+            health = str(health).upper()
+            if health in statuses:
+                statuses[health].append(row["Project Name"])
     return statuses
 
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float], name: str) -> list[float]:
@@ -92,7 +92,7 @@ def main() -> None:
             row_num = df[df["Project Name"] == project_name].index[0]
             percent = df["%Project Duration Completed"][row_num]
 
-            # sector bounds can be improved by defining them in a separate data structure
+            # sector bounds might be able to be improved by defining them in a separate data structure?
             sectors = {
                 "InfoSec Protection Services": [0 + 0.03, math.pi / 4],
                 "IT Risk Management": [math.pi / 4 + 0.05, math.pi / 2],
