@@ -53,10 +53,11 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
                 return [ideal_radius, max_a + (30 / (ideal_radius * 2))]
 
 def plot_radar_chart(df: pd.DataFrame, positions: list[list[list[float, float, str, str]]]) -> None:
-    fig, ax = plt.subplots(frameon=False)
-    ax.set_aspect("equal", adjustable="box")
+    fig, ax = plt.subplots(figsize=(IMG_WIDTH / 100, IMG_HEIGHT / 100), frameon=False)
+    ax.set_aspect('equal', adjustable='datalim')
     ax.set_axis_off()
-    ax.imshow(mpimg.imread(IMG_PATH), aspect="auto")
+    img = mpimg.imread(IMG_PATH)
+    ax.imshow(img, extent=[0, IMG_WIDTH, 0, IMG_HEIGHT])
 
     for category_positions in positions:
         for theta, r, radar_id, health in category_positions:
@@ -68,19 +69,18 @@ def plot_radar_chart(df: pd.DataFrame, positions: list[list[list[float, float, s
             }
             curr_color = color_map.get(health, "#70ad46")  # default to green if health isn't recognized
             
-            # display only the last 2 characters of radar_id if it's longer than 2 characters
             radar_id_str = str(radar_id)
-            radar_id_display = radar_id_str[-2:] if len(radar_id_str) > 2 else radar_id_str
+            radar_id_display = radar_id_str[-2:] if len(radar_id_str) > 2 else radar_id_str # only use last 2 characters of radar id
 
-            circle = plt.Circle(
-                (r * math.cos(theta) + IMG_WIDTH // 2, IMG_HEIGHT // 2 - r * math.sin(theta)),
-                8, color=curr_color, fill=True
-            )
+            x = r * math.cos(theta) + IMG_WIDTH / 2
+            y = r * math.sin(theta) + IMG_HEIGHT / 2
+
+            circle = plt.Circle((x, y), 8, color=curr_color, fill=True)
             ax.add_artist(circle)
-            ax.text(r * math.cos(theta) + IMG_WIDTH // 2, IMG_HEIGHT // 2 - r * math.sin(theta),
-                    radar_id_display, ha="center", va="center", fontsize=5, color="white")
+            ax.text(x, y, radar_id_display, ha="center", va="center", fontsize=5, color="white")
 
-    fig.savefig("radar.png", dpi=250, bbox_inches="tight")
+    fig.savefig("radar.png", dpi=250, bbox_inches='tight', pad_inches=0)
+    plt.close(fig)
 
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
