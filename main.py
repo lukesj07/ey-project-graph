@@ -1,147 +1,45 @@
-from operator import ge
-from numpy.lib.function_base import angle
-import openpyxl
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import string
 import numpy as np
 import math
 
-from openpyxl.styles import colors
-from openpyxl.styles import Font, Color
-from pandas.core.common import iterable_not_string
+from openpyxl import load_workbook
 
 DATA_PATH = "spreadsheet.xlsx"
 IMG_PATH = "img.jpg"
-
 IMG_WIDTH = 700
 IMG_HEIGHT = 720
 
-def create_radar_ids() -> list[str]:
-    ids = []
-    for i in range(100):
-        if i >= 10:
-            ids.append(str(i))
-        else:
-            ids.append("0" + str(i))
-
-    for c in string.ascii_uppercase:
-        for i in range(10):
-            ids.append(c + str(i))
+def sort_project_status(df: pd.DataFrame) -> dict[str, list[str]]:
+    statuses = {"GREEN": [], "AMBER": [], "ON HOLD": [], "RED": []}
     
-    return ids
-
-def sort_project_status(df: pd.DataFrame) -> list[list[str]]:
-    green = []
-    amber = []
-    hold = []
-    red = []
     for index, row in df.iterrows():
-        match row["Overall Health"]:
-            case "GREEN":
-                green.append(row["Project Name"])
-            case "Green":
-                green.append(row["Project Name"])
-            case "AMBER":
-                amber.append(row["Project Name"])
-            case "Amber":
-                amber.append(row["Project Name"])
-            case "ON HOLD":
-                hold.append(row["Project Name"])
-            case "On Hold":
-                hold.append(row["Project Name"])
-            case "RED":
-                red.append(row["Project Name"])
-            case "Red":
-                red.append(row["Project Name"])
-            case "Canceled":
-                continue
-            case "Closed":
-                continue
-            case "-":
-                continue
-            case _:
-                green.append(row["Project Name"])
-    return [green, amber, hold, red]
-
-"""
-def generate_excel(radar_ids: list[str], names: list[list[str]]) -> None:
-    gkey = "Green Status: " + str(len(names[0])) + " projects"
-    akey = "Amber Status: " + str(len(names[1])) + " projects"
-    okey = "On Hold: " + str(len(names[2])) + " projects"
-    rkey = "Red Status: " + str(len(names[3])) + " projects"
-
-    data = dict()
-    data[gkey] = []
-    data[akey] = []
-    data[okey] = []
-    data[rkey] = []
-    
-    idx = 0
-    for i in range(len(names)):
-        for j in range(len(names[i])):
-            match i:
-                case 0:
-                    data[gkey].append(names[i][j] + ": " + radar_ids[idx])
-                case 1:
-                    data[akey].append(names[i][j] + ": " + radar_ids[idx])
-                case 2:
-                    data[okey].append(names[i][j] + ": " + radar_ids[idx])
-                case 3:
-                    data[rkey].append(names[i][j] + ": " + radar_ids[idx])
-            idx += 1
-
-    max_len = max(map(len, data.values()))
-    for v in data.values():
-        for i in range(max_len-len(v)):
-            v.append(np.nan)
-
-    df = pd.DataFrame.from_dict(data)
-
-    def color(val: str) -> str:
-        if val in df[gkey]:
-            return "color: green"
-        if val in df[akey]:
-            return "color: orange"
-        if val in df[okey]:
-            return "color: gray"
-        if val in df[rkey]:
-            return "color: red"
-
-    df.insert(1,"","")
-    df.insert(3," ","")
-    df.insert(5,"  ","")
-
-    df.to_excel("legend.xlsx", index=False)
-    wb = openpyxl.load_workbook("legend.xlsx")
-    ws = wb.active
-    for c in ["A", "C", "E", "G"]:
-        for i in range(1, max_len+2):
-            match c:
-                case "A":
-                    ws[c + str(i)].font = Font(color=colors.Color("70ad46"))
-                case "C":
-                    ws[c + str(i)].font = Font(color=colors.Color("ffc000"))
-                case "E":
-                    ws[c + str(i)].font = Font(color=colors.Color("7f7f7f"))
-                case "G":
-                    ws[c + str(i)].font = Font(color=colors.Color("c00000"))
-
-    wb.save("legend.xlsx")
-"""
+        health = row["Overall Health"]
+        
+        # check if health is NaN or not a string, then continue to the next iteration
+        if pd.isna(health) or not isinstance(health, str):
+            continue
+        
+        health = health.upper()  # Convert to uppercase for consistent matching
+        
+        if health in statuses:
+            statuses[health].append(row["Project Name"])
+        elif health not in ["CANCELED", "CLOSED", "-"]:
+            statuses["GREEN"].append(row["Project Name"])  # Default to GREEN for any unspecified health
+            
+    return statuses
 
 def calculate_position(percent: float, positions: list[list[list]], idx: int, angle_bounds: list[float], name: str) -> list[float]:
-    i = 0
     while True:
         overlapping = []
         if 0.75 <= percent <= 1.0:
-            out = 0 + ((1 - 0) / (1 - 0.75)) * (percent - 0.75)
+            out = (1 / (0.25)) * (percent - 0.75)
             ideal_radius = round(150 * (1 - out) + 25)
-        elif percent < 0.75:
-            out = 0 + ((1 - 0) / (0.75 - 0)) * (percent - 0)
+        else:
+            out = (1 / 0.75) * percent
             ideal_radius = round(160 * (1 - out) + 150)
-    
+
         max_points = (((angle_bounds[1] - angle_bounds[0]) * ideal_radius) // 12) - 1
 
         for p in positions[idx]:
@@ -149,133 +47,76 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
                 overlapping.append(p)
     
         if len(overlapping) == 0:
-            # print(f"No overlapping - name: {name} - r: {ideal_radius} - angle: {angle_bounds[0] + (10/(ideal_radius * 2))} - iters: {i}")
-            return [ideal_radius, angle_bounds[0] + (15/(ideal_radius * 2))]
+            return [ideal_radius, angle_bounds[0] + (15 / (ideal_radius * 2))]
 
         if len(overlapping) >= max_points:
             percent -= 0.01
         else:
             max_a = max([p[0] for p in overlapping])
-            if max_a + (20/(ideal_radius*2)) > angle_bounds[1]:
+            if max_a + (20 / (ideal_radius * 2)) > angle_bounds[1]:
                 percent -= 0.01
             else:
-                # print(f"Take max current angle - name: {name} - r: {ideal_radius} - angle: {max_a + (30/(ideal_radius * 2))} - iters: {i}")
-                return [ideal_radius, max_a + (30/(ideal_radius*2))]
+                return [ideal_radius, max_a + (30 / (ideal_radius * 2))]
 
-        i += 1
+def plot_radar_chart(df: pd.DataFrame, positions: list[list[list[float, float, str, str]]]) -> None:
+    fig, ax = plt.subplots(frameon=False)
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_axis_off()
+    ax.imshow(mpimg.imread(IMG_PATH), aspect="auto")
 
+    for category_positions in positions:
+        for theta, r, radar_id, health in category_positions:
+            color_map = {
+                "GREEN": "#70ad46",
+                "AMBER": "#ffc000",
+                "ON HOLD": "#7f7f7f",
+                "RED": "#c00000",
+            }
+            curr_color = color_map.get(health.upper(), "#70ad46")
+            circle = plt.Circle(
+                (r * math.cos(theta) + IMG_WIDTH // 2, IMG_HEIGHT // 2 - r * math.sin(theta)),
+                8, color=curr_color, fill=True
+            )
+            ax.add_artist(circle)
+            ax.text(r * math.cos(theta) + IMG_WIDTH // 2, IMG_HEIGHT // 2 - r * math.sin(theta),
+                    radar_id, ha="center", va="center", fontsize=5, color="white")
+
+    fig.savefig("radar.png", dpi=250, bbox_inches="tight")
 
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
     df = df.dropna(how="all", axis=1)
-
     df.columns = df.iloc[0].tolist()
-    df = df[1:]
-    df = df.reset_index()
-    df = df.drop("index", axis=1)
-    names = sort_project_status(df)
-    # ids = create_radar_ids()
-    #generate_excel(create_radar_ids(), names)
-    positions = [[], [], [], [], [], [], [], [], []] # list[list[list[float, float, str, str]]] theta, r, id, health
+    df = df[1:].reset_index(drop=True)
     
-    # id_idx = 0
-    for i in range(len(names)):
-        for name in names[i]:
-            
-            row_num = 0
-            for idx, row in df.iterrows():
-                if any(name in str(value) for value in row):
-                    row_num = idx
-                    break
-            
-
-            #row_num = df.apply(lambda row: row.astype(str).str.contains(name).any(), axis=1).idxmax()
-            
+    statuses = sort_project_status(df)
+    positions = [[] for _ in range(8)]  # 8 sectors in the radar chart
+    
+    for status_idx, (status_name, projects) in enumerate(statuses.items()):
+        for project_name in projects:
+            row_num = df[df["Project Name"] == project_name].index[0]
             percent = df["%Project Duration Completed"][row_num]
 
+            # Sector bounds can be improved by defining them in a separate data structure
+            sectors = {
+                "InfoSec Protection Services": [0 + 0.03, math.pi / 4],
+                "IT Risk Management": [math.pi / 4 + 0.05, math.pi / 2],
+                "Identity and Access": [math.pi / 2, 3 * math.pi / 4],
+                "Threat Management": [3 * math.pi / 4 + 0.05, math.pi],
+                "InfoSec Program Management": [math.pi + 0.01, 5 * math.pi / 4],
+                "InfoSec Program Support": [5 * math.pi / 4 + 0.05, 3 * math.pi / 2],
+                "Security Design Services": [3 * math.pi / 2 + 0.05, 7 * math.pi / 4],
+                "Compliance and Assurance": [7 * math.pi / 4 + 0.1, 2 * math.pi],
+            }
 
-            match df["Service Category"][row_num]:
-                case "InfoSec Protection Services":
-                    # 0 - pi/4
-                    r, a = calculate_position(percent, positions, 0, [0.03, math.pi/4], name)
-                    positions[0].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]]) #ids[id_idx]
-                case "IT Risk Management":
-                    # pi/4 - pi/2
-                    r, a = calculate_position(percent, positions, 1, [math.pi/4+0.05, math.pi/2], name)
-                    positions[1].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
-                case "Identity and Access":
-                    # pi/2 - 3pi/4
-                    r, a = calculate_position(percent, positions, 2, [math.pi/2, 3*math.pi/4], name)
-                    positions[2].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
-                case "Threat Management":
-                    # 3pi/4 - pi
-                    r, a = calculate_position(percent, positions, 3, [3*math.pi/4+0.05, math.pi], name)
-                    positions[3].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
-                case "InfoSec Program Management":
-                    # pi - 5pi/4
-                    r, a = calculate_position(percent, positions, 4, [math.pi + 0.01, 5*math.pi/4], name)
-                    positions[4].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
-                case "InfoSec Program Support":
-                    # 5pi/4 - 3pi/2
-                    r, a = calculate_position(percent, positions, 5, [5*math.pi/4+0.05, 3*math.pi/2], name)
-                    positions[5].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
-                case "Security Design Services":
-                    # 3pi/2 - 7pi/4
-                    r, a = calculate_position(percent, positions, 6, [3*math.pi/2+0.05, 7*math.pi/4], name)
-                    positions[6].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
-                case "Compliance and Assurance":
-                    # 7pi/4 - 2pi
-                    r, a = calculate_position(percent, positions, 7, [7*math.pi/4+0.1, 2*math.pi], name)
-                    positions[7].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
-                case _:
-                    print("This should not run")
-
-            # id_idx += 1
+            service_category = df["Service Category"][row_num]
+            if service_category in sectors:
+                angle_bounds = sectors[service_category]
+                r, a = calculate_position(percent, positions, status_idx, angle_bounds, project_name)
+                positions[status_idx].append([a, r, df["Radar ID"][row_num], df["Overall Health"][row_num]])
     
-
-    fig, ax = plt.subplots(frameon=False)
-
-    ax.set_aspect("equal", adjustable="box")
-    ax.set_axis_off()
-    ax.imshow(mpimg.imread(IMG_PATH), aspect="auto")
-    # theta, r, id, health
-    for c in positions:
-        for p in c:
-            curr_color = ""
-            match p[3]:
-                case "GREEN":
-                    curr_color = "#70ad46"
-                case "Green":
-                    curr_color = "#70ad46"
-                case "AMBER":
-                    curr_color = "#ffc000"
-                case "Amber":
-                    curr_color = "#ffc000"
-                case "ON HOLD":
-                    curr_color = "#7f7f7f"
-                case "On Hold":
-                    curr_color = "#7f7f7f"
-                case "RED": 
-                    curr_color = "#c00000"
-                case "Red": 
-                    curr_color = "#c00000"
-                case "Canceled":
-                    continue
-                case "Closed":
-                    continue
-                case "-":
-                    continue
-                case _:
-                    curr_color = "#70ad46"
-            circle = plt.Circle((p[1]*math.cos(p[0]) + IMG_WIDTH//2, IMG_HEIGHT//2 - p[1]*math.sin(p[0])), 8, color=curr_color, fill=True)
-            ax.add_artist(circle)
-            ax.text(p[1]*math.cos(p[0]) + IMG_WIDTH//2,  IMG_HEIGHT//2 - p[1]*math.sin(p[0]), p[2], ha="center", va="center", fontsize=5, color="white")
-
-    # Save the figure without borders
-    fig.savefig("radar.png", dpi=250, bbox_inches="tight")
-
-    #plt.show()
-    
+    plot_radar_chart(df, positions)
 
 if __name__ == "__main__":
     main()
+
