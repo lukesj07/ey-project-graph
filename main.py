@@ -66,7 +66,11 @@ def plot_radar_chart(df: pd.DataFrame, positions: list[list[list[float, float, s
                 "ON HOLD": "#7f7f7f",
                 "RED": "#c00000",
             }
-            curr_color = color_map.get(health, "#70ad46")  # default to green if health isn't found
+            curr_color = color_map.get(health, "#70ad46")  # default to green if health isn't recognized
+            
+            # display only the last 2 characters of radar_id if it's longer than 2 characters
+            radar_id_str = str(radar_id)
+            radar_id_display = radar_id_str[-2:] if len(radar_id_str) > 2 else radar_id_str
 
             circle = plt.Circle(
                 (r * math.cos(theta) + IMG_WIDTH // 2, IMG_HEIGHT // 2 - r * math.sin(theta)),
@@ -74,7 +78,7 @@ def plot_radar_chart(df: pd.DataFrame, positions: list[list[list[float, float, s
             )
             ax.add_artist(circle)
             ax.text(r * math.cos(theta) + IMG_WIDTH // 2, IMG_HEIGHT // 2 - r * math.sin(theta),
-                    radar_id, ha="center", va="center", fontsize=5, color="white")
+                    radar_id_display, ha="center", va="center", fontsize=5, color="white")
 
     fig.savefig("radar.png", dpi=250, bbox_inches="tight")
 
