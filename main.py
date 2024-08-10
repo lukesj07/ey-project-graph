@@ -15,18 +15,12 @@ def sort_project_status(df: pd.DataFrame) -> dict[str, list[str]]:
     statuses = {"GREEN": [], "AMBER": [], "ON HOLD": [], "RED": []}
     
     for index, row in df.iterrows():
-        health = row["Overall Health"]
-        
-        # check if health is NaN or not a string, then continue to the next iteration
-        if pd.isna(health) or not isinstance(health, str):
-            continue
-        
-        health = health.upper()  # Convert to uppercase for consistent matching
+        health = str(row["Overall Health"]).upper()
         
         if health in statuses:
             statuses[health].append(row["Project Name"])
         elif health not in ["CANCELED", "CLOSED", "-"]:
-            statuses["GREEN"].append(row["Project Name"])  # Default to GREEN for any unspecified health
+            statuses["GREEN"].append(row["Project Name"])  # default to GREEN for any unspecified health
             
     return statuses
 
@@ -72,7 +66,8 @@ def plot_radar_chart(df: pd.DataFrame, positions: list[list[list[float, float, s
                 "ON HOLD": "#7f7f7f",
                 "RED": "#c00000",
             }
-            curr_color = color_map.get(health.upper(), "#70ad46")
+            curr_color = color_map.get(health, "#70ad46")  # default to green if health isn't found
+
             circle = plt.Circle(
                 (r * math.cos(theta) + IMG_WIDTH // 2, IMG_HEIGHT // 2 - r * math.sin(theta)),
                 8, color=curr_color, fill=True
@@ -97,7 +92,7 @@ def main() -> None:
             row_num = df[df["Project Name"] == project_name].index[0]
             percent = df["%Project Duration Completed"][row_num]
 
-            # Sector bounds can be improved by defining them in a separate data structure
+            # sector bounds can be improved by defining them in a separate data structure
             sectors = {
                 "InfoSec Protection Services": [0 + 0.03, math.pi / 4],
                 "IT Risk Management": [math.pi / 4 + 0.05, math.pi / 2],
@@ -119,4 +114,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
