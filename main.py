@@ -55,9 +55,11 @@ def sort_project_status(df: pd.DataFrame) -> list[list[str]]:
                 red.append(row["Project Name"])
             case "Red":
                 red.append(row["Project Name"])
-            case "Cancel":
+            case "Canceled":
                 continue
             case "Closed":
+                continue
+            case "-":
                 continue
             case _:
                 green.append(row["Project Name"])
@@ -136,11 +138,9 @@ def calculate_position(percent: float, positions: list[list[list]], idx: int, an
         if 0.75 <= percent <= 1.0:
             out = 0 + ((1 - 0) / (1 - 0.75)) * (percent - 0.75)
             ideal_radius = round(150 * (1 - out) + 25)
-
         elif percent < 0.75:
             out = 0 + ((1 - 0) / (0.75 - 0)) * (percent - 0)
             ideal_radius = round(160 * (1 - out) + 150)
-    
     
         max_points = (((angle_bounds[1] - angle_bounds[0]) * ideal_radius) // 12) - 1
 
@@ -181,12 +181,16 @@ def main() -> None:
     # id_idx = 0
     for i in range(len(names)):
         for name in names[i]:
+            
             row_num = 0
             for idx, row in df.iterrows():
                 if any(name in str(value) for value in row):
                     row_num = idx
                     break
+            
 
+            #row_num = df.apply(lambda row: row.astype(str).str.contains(name).any(), axis=1).idxmax()
+            
             percent = df["%Project Duration Completed"][row_num]
 
 
@@ -255,9 +259,11 @@ def main() -> None:
                     curr_color = "#c00000"
                 case "Red": 
                     curr_color = "#c00000"
-                case "Cancel":
+                case "Canceled":
                     continue
                 case "Closed":
+                    continue
+                case "-":
                     continue
                 case _:
                     curr_color = "#70ad46"
