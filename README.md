@@ -3,7 +3,7 @@ This project is developed for the InfoSec division of EY to provide a visual rep
 
 ## Features
 - **Project Status Sorting**: Automatically categorizes projects into "GREEN", "AMBER", "ON HOLD", and "RED" based on their overall health, and sorts them based off of what service category they belong to.
-- **Dynamic Position Calculation**: Ensures that project markers do not overlap on the radar chart, providing a clear and concise visualization.
+- **Dynamic Position Calculation**: Ensures that project markers do not overlap on the radar chart.
 
 ## Installation
 
