@@ -13,7 +13,7 @@ This project is developed for the InfoSec division of EY to provide a visual rep
    ```bash
    pip install pandas matplotlib openpyxl numpy
    ```
-   NOTE: command varies slightly on different operating systems
+   NOTE: command and process varies slightly on different operating systems
 
 ## Usage
 1. **Prepare the Data**: Ensure your base image (`img.jpg`) stored in an Excel spreadsheet (`spreadsheet.xlsx`) with the following columns:
@@ -22,15 +22,16 @@ This project is developed for the InfoSec division of EY to provide a visual rep
    - `%Project Duration Completed`
    - `Service Category`
    - `Radar ID`
+
      Make sure the image file (`img.jpg`), the spreadsheet (`spreadsheet.xlsx`), and the main Python script (`main.py`) are all located in the same folder.
 
-2. **Run the Script**
+2. **Customize the Radar Chart**: Adjust the parameters such as `IMG_WIDTH`, `IMG_HEIGHT`, and sector bounds within the script to fit your specific requirements.
+
+3. **Run the Script**
    ```bash
    python main.py
    ```
-   NOTE: command varies, most of the time the file can just be double clicked to run
-   
-3. **Customize the Radar Chart**: Adjust the parameters such as `IMG_WIDTH`, `IMG_HEIGHT`, and sector bounds within the script to fit your specific requirements.
+   NOTE: command varies, most of the time the file can be double clicked to run
 
 ## File Structure
 - `spreadsheet.xlsx`: The Excel file containing project data.
