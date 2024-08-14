@@ -11,7 +11,7 @@ This project is developed for the InfoSec division of EY to provide a visual rep
 2. Open Command Prompt and install the required libraries using:
 
    ```bash
-   pip install pandas matplotlib openpyxl numpy
+   pip install pandas matplotlib
    ```
    NOTE: command and process varies slightly on different operating systems
 
