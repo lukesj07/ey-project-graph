@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import math
 
-DATA_PATH = "spreadsheet.xlsx"
-IMG_PATH = "img.jpg"
-IMG_WIDTH = 700
-IMG_HEIGHT = 720
+DATA_PATH = "Project Radar Spreadsheet.xlsx"
+IMG_PATH = "FY25 radar, active projects.jpg"
+IMG_WIDTH = 872
+IMG_HEIGHT = 856
 
 def sort_project_status(df: pd.DataFrame) -> dict[str, list[str]]:
     statuses = {"GREEN": [], "AMBER": [], "ON HOLD": [], "RED": []}
@@ -87,21 +87,22 @@ def main() -> None:
     df.columns = df.iloc[0].tolist()
     df = df[1:].reset_index(drop=True)
     
-    duplicate_projects = df[df.duplicated(subset=["Project Name", "Service Category"], keep=False)]
+    duplicate_projects = df[df.duplicated(subset=["Project Name", "Strategic Priority: Primary"], keep=False)]
     if not duplicate_projects.empty:
         print("Duplicate Projects Found:\n", duplicate_projects)
 
     statuses = sort_project_status(df)
     
     sectors = {
-        "InfoSec Protection Services": [0.03, math.pi / 4],
-        "IT Risk Management": [math.pi / 4 + 0.05, math.pi / 2],
-        "Identity and Access": [math.pi / 2 + 0.05, 3 * math.pi / 4],
-        "Threat Management": [3 * math.pi / 4 + 0.05, math.pi - 0.1],
-        "InfoSec Program Management": [math.pi + 0.05, 5 * math.pi / 4],
-        "InfoSec Program Support": [5 * math.pi / 4 + 0.05, 3 * math.pi / 2],
-        "Security Design Services": [3 * math.pi / 2 + 0.05, 7 * math.pi / 4],
-        "Compliance and Assurance": [7 * math.pi / 4 + 0.1, 2 * math.pi],
+        "1.1 Governance accountability": [math.pi / 2, 13 * math.pi / 18],
+        "1.2 Strategic traceability": [5 * math.pi / 18, math.pi / 2],
+        "1.3 Strategic alignment": [math.pi / 18, 5 * math.pi / 18],
+        "2.1 Scalable simplicity": [11 * math.pi / 6, math.pi / 18],
+        "2.2 Automation & self-service": [29 * math.pi / 18, 11 * math.pi / 6],
+        "2.3 Collaborative empowerment": [25 * math.pi / 18, 29 * math.pi / 18],
+        "3.1 Stakeholder-enabling integration": [21 * math.pi / 18, 25 * math.pi / 18],
+        "3.2 Stakeholder centricity": [17 * math.pi / 18, 21 * math.pi / 18],
+        "3.3 Empowered security culture": [13 * math.pi / 18, 17 * math.pi / 18]
     }
 
     positions = {sector: [] for sector in sectors}
@@ -110,13 +111,13 @@ def main() -> None:
         for project_name in projects:
             row = df[df["Project Name"] == project_name].iloc[0]
             percent = row["%Project Duration Completed"]
-            service_category = row["Service Category"]
+            service_category = row["Strategic Priority: Primary"]
             
             if service_category in sectors:
                 angle_bounds = sectors[service_category]
                 r, a = calculate_position(percent, positions[service_category], angle_bounds)
                 
-                positions[service_category].append([a, r, row["Radar ID"], row["Overall Health"]])
+                positions[service_category].append([a, r, row["2 digit Radar ID"], row["Overall Health"]])
 
     plot_radar_chart(df, positions)
 
