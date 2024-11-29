@@ -96,8 +96,8 @@ def main() -> None:
     sectors = {
         "1.1 Governance accountability": [math.pi / 2, 13 * math.pi / 18],
         "1.2 Strategic traceability": [5 * math.pi / 18, math.pi / 2],
-        "1.3 Strategic alignment": [math.pi / 18, 5 * math.pi / 18],
-        "2.1 Scalable simplicity": [11 * math.pi / 6, math.pi / 18],
+        "1.3 Strategic alignment": [math.pi / 18 + 0.1, 5 * math.pi / 18],
+        "2.1 Scalable simplicity": [11 * math.pi / 6, 2 * math.pi + math.pi / 18],
         "2.2 Automation & self-service": [29 * math.pi / 18, 11 * math.pi / 6],
         "2.3 Collaborative empowerment": [25 * math.pi / 18, 29 * math.pi / 18],
         "3.1 Stakeholder-enabling integration": [21 * math.pi / 18, 25 * math.pi / 18],
