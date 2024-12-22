@@ -22,7 +22,11 @@ def sort_project_status(df: pd.DataFrame) -> dict[str, list[str]]:
     
     return statuses
 
-def calculate_position(percent: float, positions: list[list[float]], angle_bounds: list[float]) -> list[float]:
+def calculate_position(
+    percent: float, 
+    positions: list[tuple[float, float]], 
+    angle_bounds: tuple[float, float]
+) -> tuple[float, float]:
     while True:
         overlapping = []
         if 0.75 <= percent <= 1.0:
@@ -39,7 +43,7 @@ def calculate_position(percent: float, positions: list[list[float]], angle_bound
                 overlapping.append(p)
     
         if not overlapping:
-            return [ideal_radius, angle_bounds[0] + (15 / (ideal_radius * 2))]
+            return (ideal_radius, angle_bounds[0] + (15 / (ideal_radius * 2)))
 
         if len(overlapping) >= max_points:
             percent -= 0.01
@@ -48,9 +52,12 @@ def calculate_position(percent: float, positions: list[list[float]], angle_bound
             if max_a + (20 / (ideal_radius * 2)) > angle_bounds[1]:
                 percent -= 0.01
             else:
-                return [ideal_radius, max_a + (30 / (ideal_radius * 2))]
+                return (ideal_radius, max_a + (30 / (ideal_radius * 2)))
 
-def plot_radar_chart(df: pd.DataFrame, positions: dict[str, list[list[float, float, str, str]]]) -> None:
+def plot_radar_chart(
+    df: pd.DataFrame, 
+    positions: dict[str, list[tuple[float, float, str, str]]]
+) -> None:
     fig, ax = plt.subplots(figsize=(IMG_WIDTH / 100, IMG_HEIGHT / 100), frameon=False)
     ax.set_aspect('equal', adjustable='datalim')
     ax.set_axis_off()
@@ -84,8 +91,8 @@ def plot_radar_chart(df: pd.DataFrame, positions: dict[str, list[list[float, flo
 def main() -> None:
     df = pd.read_excel(DATA_PATH)
     df.dropna(how="all", axis=1, inplace=True)
-    df.columns = df.iloc[0].tolist()
-    df = df[1:].reset_index(drop=True)
+    df.columns = list(df.iloc[0])
+    df = df.iloc[1:].reset_index(drop=True)
     
     duplicate_projects = df[df.duplicated(subset=["Project Name", "Strategic Priority: Primary"], keep=False)]
     if not duplicate_projects.empty:
@@ -94,15 +101,15 @@ def main() -> None:
     statuses = sort_project_status(df)
     
     sectors = {
-        "1.1 Governance accountability": [math.pi / 2, 13 * math.pi / 18],
-        "1.2 Strategic traceability": [5 * math.pi / 18, math.pi / 2],
-        "1.3 Strategic alignment": [math.pi / 18 + 0.1, 5 * math.pi / 18],
-        "2.1 Scalable simplicity": [11 * math.pi / 6, 2 * math.pi + math.pi / 18],
-        "2.2 Automation & self-service": [29 * math.pi / 18, 11 * math.pi / 6],
-        "2.3 Collaborative empowerment": [25 * math.pi / 18, 29 * math.pi / 18],
-        "3.1 Stakeholder-enabling integration": [21 * math.pi / 18, 25 * math.pi / 18],
-        "3.2 Stakeholder centricity": [17 * math.pi / 18, 21 * math.pi / 18],
-        "3.3 Empowered security culture": [13 * math.pi / 18, 17 * math.pi / 18]
+        "1.1 Governance accountability": (math.pi / 2, 13 * math.pi / 18),
+        "1.2 Strategic traceability": (5 * math.pi / 18, math.pi / 2),
+        "1.3 Strategic alignment": (math.pi / 18 + 0.1, 5 * math.pi / 18),
+        "2.1 Scalable simplicity": (11 * math.pi / 6, 2 * math.pi + math.pi / 18),
+        "2.2 Automation & self-service": (29 * math.pi / 18, 11 * math.pi / 6),
+        "2.3 Collaborative empowerment": (25 * math.pi / 18, 29 * math.pi / 18),
+        "3.1 Stakeholder-enabling integration": (21 * math.pi / 18, 25 * math.pi / 18),
+        "3.2 Stakeholder centricity": (17 * math.pi / 18, 21 * math.pi / 18),
+        "3.3 Empowered security culture": (13 * math.pi / 18, 17 * math.pi / 18),
     }
 
     positions = {sector: [] for sector in sectors}
@@ -116,8 +123,7 @@ def main() -> None:
             if service_category in sectors:
                 angle_bounds = sectors[service_category]
                 r, a = calculate_position(percent, positions[service_category], angle_bounds)
-                
-                positions[service_category].append([a, r, row["2 digit Radar ID"], row["Overall Health"]])
+                positions[service_category].append((a, r, row["2 digit Radar ID"], row["Overall Health"]))
 
     plot_radar_chart(df, positions)
 
