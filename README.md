@@ -16,14 +16,14 @@ This project is developed for the InfoSec division of EY to provide a visual rep
    NOTE: command and process varies slightly on different operating systems
 
 ## Usage
-1. **Prepare the Data**: Ensure your base image (`img.jpg`) stored in an Excel spreadsheet (`spreadsheet.xlsx`) with the following columns:
+1. **Prepare the Data**: Ensure your base image (`inputimg.jpg`) stored in an Excel spreadsheet (`inputsheet.xlsx`) with the following columns:
    - `Project Name`
    - `Overall Health`
    - `%Project Duration Completed`
-   - `Service Category`
-   - `Radar ID`
+   - `Strategic Priority: Primary`
+   - `2 digit Radar ID`
 
-     Make sure the image file (`img.jpg`), the spreadsheet (`spreadsheet.xlsx`), and the main Python script (`main.py`) are all located in the same folder.
+     Make sure the image file (`inputimg.jpg`), the spreadsheet (`inputsheet.xlsx`), and the main Python script (`main.py`) are all located in the same folder.
 
 2. **Customize the Radar Chart**: Adjust the parameters such as `IMG_WIDTH`, `IMG_HEIGHT`, and sector bounds within the script to fit your specific requirements.
 
@@ -34,7 +34,7 @@ This project is developed for the InfoSec division of EY to provide a visual rep
    NOTE: command varies, most of the time the file can be double clicked to run
 
 ## File Structure
-- `spreadsheet.xlsx`: The Excel file containing project data.
-- `img.jpg`: The background image used for the radar chart.
+- `inputsheet.xlsx`: The Excel file containing project data.
+- `inputimg.jpg`: The background image used for the radar chart.
 - `main.py`: The main script that generates the radar chart.
-- `radar.png`: The output radar chart image.
+- `output.png`: The output radar chart image.
